@@ -1,0 +1,168 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secret Coder Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            transition: background 0.3s, color 0.3s;
+        }
+        .container {
+            display: flex;
+            height: 80vh;
+        }
+        .editor-container, .output-container {
+            width: 50%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .output-container {
+            background: #252526;
+            overflow: auto;
+            border-left: 2px solid #ccc;
+            color: #ffffff;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .profile {
+            cursor: pointer;
+            position: relative;
+        }
+        .profile-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            right: 0;
+            top: 30px;
+            padding: 10px;
+            border-radius: 5px;
+            color: black;
+        }
+        .profile:hover .profile-menu {
+            display: block;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #007bff;
+            color: white;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+        select, button {
+            margin-top: 10px;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .theme-toggle {
+            background: #fff;
+            color: #333;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    </style>
+    <script>
+        let editor;
+        function toggleTheme() {
+            const body = document.body;
+            if (body.style.backgroundColor === "#ffffff") {
+                body.style.backgroundColor = "#1e1e1e";
+                body.style.color = "#ffffff";
+            } else {
+                body.style.backgroundColor = "#ffffff";
+                body.style.color = "#000000";
+            }
+        }
+        window.onload = function() {
+            const userName = localStorage.getItem("username") || "User";
+            document.getElementById("user-name").innerText = userName;
+
+            editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+                lineNumbers: true,
+                mode: "javascript",
+                theme: "dracula",
+                extraKeys: { "Ctrl-Space": "autocomplete" }
+            });
+        };
+        async function compileAndRun() {
+            const code = editor.getValue();
+            const language = document.getElementById("languageSelect").value;
+            const outputElement = document.getElementById("output");
+            outputElement.innerHTML = "Running...";
+            try {
+                const response = await fetch("https://emkc.org/api/v2/piston/execute", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ language: language, source: code })
+                });
+                const result = await response.json();
+                outputElement.innerHTML = result.output || "No output";
+            } catch (error) {
+                outputElement.innerHTML = "Error: " + error.message;
+            }
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Welcome, <span id="user-name"></span>!</h1>
+        <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+        <div class="profile">Profile ▼
+            <div class="profile-menu">
+                <p>Dashboard</p>
+                <p>Courses</p>
+                <p>Profile</p>
+                <p>Logout</p>
+            </div>
+        </div>
+    </header>
+    <div class="container">
+        <div class="editor-container">
+            <h2>Code Editor</h2>
+            <select id="languageSelect">
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="c">C</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+            </select>
+            <textarea id="codeEditor"></textarea>
+            <button onclick="compileAndRun()">Compile & Run</button>
+        </div>
+        <div class="output-container">
+            <h2>Output</h2>
+            <div id="output">Output will appear here...</div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2025 Secret Coder. All rights reserved.</p>
+    </footer>
+</body>
+</html>
