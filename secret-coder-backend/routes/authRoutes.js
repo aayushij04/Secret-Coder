@@ -96,7 +96,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
 const router = express.Router();
-const JWT_SECRET = "your_jwt_secret";  // Change it in production
+const JWT_SECRET = "JWT_SECRET";  // Change it in production
 
 // Signup Route
 router.post("/signup", async (req, res) => {

@@ -1,28 +1,39 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const Instructor = require("../models/instructor");
-
-// Route to handle instructor application
-router.get("/", (req, res) => {
-  res.json({ message: "Instructor API is working!" });
-});
+const Instructor = require('../models/Instructor'); // ✅ Ensure the model path is correct
 
 router.post("/", async (req, res) => {
-    try {
-        const { f_name, l_name, email, phone, degree, subject, address } = req.body;
+  console.log("📥 FULL request body:", req.body);
 
-        if (!f_name || !l_name || !email || !phone || !degree || !subject || !address) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
+  const { firstName, lastName, email, phone, degree, subject, address } = req.body;
 
-        const newInstructor = new Instructor({ f_name, l_name, email, phone, degree, subject, address });
+  const fields = [firstName, lastName, email, phone, degree, subject, address];
+  const fieldNames = ["firstName", "lastName", "email", "phone", "degree", "subject", "address"];
 
-        await newInstructor.save();
-        res.status(201).json({ message: "Application submitted successfully!" });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Server error. Please try again later." });
+  for (let i = 0; i < fields.length; i++) {
+    if (!fields[i] || !fields[i].toString().trim()) {
+      console.log(`❌ Field "${fieldNames[i]}" is missing or empty`);
+      return res.status(400).json({ message: "All fields are required" });
     }
+  }
+
+  try {
+    const newInstructor = new Instructor({
+      firstName: firstName.trim(),
+      lastName: lastName.trim(),
+      email: email.trim(),
+      phone: phone.trim(),
+      degree: degree.trim(),
+      subject: subject.trim(),
+      address: address.trim(),
+    });
+
+    await newInstructor.save();
+    res.status(201).json({ message: "Application submitted successfully!" });
+  } catch (error) {
+    console.error("❌ Save error:", error);
+    res.status(500).json({ message: "Server error. Please try again later." }); // ✅ This line was missing!
+  }
 });
 
 module.exports = router;

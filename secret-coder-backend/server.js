@@ -189,8 +189,7 @@ const app = express();
 // ✅ Middleware
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+
 app.use(express.json()); // ✅ Ensures JSON parsing
 
 // ✅ Serve Static Files (Fixing MIME Type Issues)
@@ -227,6 +226,11 @@ app.use("/api/instructors", instructorRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+});
+
+app.use("*", (req, res) => {
+  console.log("⚠️ Unknown route hit:", req.originalUrl);
+  res.status(404).send("Route not found");
 });
 
 

@@ -262,59 +262,60 @@
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="f_name" name="f_name" placeholder="First Name" required>
-                            <label for="f_name">First Name</label>
+                           <input type="text" class="form-control" id="firstName" name="firstName" autocomplete="given-name" required>
+                            <label for="firstName">First Name</label>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="l_name" name="l_name" placeholder="Last Name" required>
-                            <label for="l_name">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" autocomplete="family-name" required>
+                             <label for="lastName">Last Name</label>
                         </div>
                     </div>
             
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Your Email" required>
-                            <label for="email">Your Email</label>
+                            <input type="email" class="form-control" id="email" name="email" autocomplete="email" required>
+                            <label for="email">Email</label>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-floating">
-                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="Phone Number" required>
-                            <label for="phone">Phone Number</label>
+                           
+        <input type="tel" class="form-control" id="phone" name="phone" autocomplete="tel" required>
+        <label for="phone">Phone</label>
                         </div>
                     </div>
             
                     <div class="col-12">
                         <div class="form-floating">
                             <select id="degree" name="degree" class="form-control" required>
-                                <option value="">Select your highest degree</option>
+                                <option value="">Select Degree</option>
                                 <option value="High School">High School</option>
                                 <option value="Undergraduate">Undergraduate</option>
                                 <option value="Graduate">Graduate</option>
                                 <option value="Post-Graduate">Post-Graduate</option>
-                            </select>
-                            <label for="degree">Highest Degree</label>
+                              </select>
+                              <label for="degree">Highest Degree</label>
                         </div>
                     </div>
             
                     <div class="col-12">
                         <div class="form-floating">
                             <select id="subject" name="subject" class="form-control" required>
-                                <option value="">Select subject you want to teach</option>
+                                <option value="">Select Subject</option>
                                 <option value="Technology">Technology</option>
                                 <option value="Marketing">Marketing</option>
                                 <option value="Business">Business</option>
                                 <option value="Education">Education</option>
-                            </select>
-                            <label for="subject">Teaching Subject</label>
+                              </select>
+                              <label for="subject">Teaching Subject</label>
                         </div>
                     </div>
             
                     <div class="col-12">
                         <div class="form-floating">
-                            <textarea class="form-control" id="address" name="address" placeholder="Address" style="height: 150px" required></textarea>
+                            <textarea class="form-control" id="address" name="address" style="height: 120px" autocomplete="street-address" required ></textarea>
                             <label for="address">Address</label>
                         </div>
                     </div>
@@ -339,7 +340,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn text-white">Apply</button>
+          <button type="submit" class="btn text-white" data-bs-dismiss="modal">Apply</button>
         </div>
       </div>
     </div>
@@ -384,8 +385,8 @@
                 </div>
                 <div class="col-lg-4 col-md-6">
                     <h4 class="text-white mb-3">Contact</h4>
-                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>123 Street, Bangalore, Karnataka</p>
-                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+91 8683045908</p>
+                    <p class="mb-2"><i class="fa fa-map-marker-alt me-3"></i>Sitapura, Jaipur, Rajasthan</p>
+                    <p class="mb-2"><i class="fa fa-phone-alt me-3"></i>+91 8683090908</p>
                     <p class="mb-2"><i class="fa fa-envelope me-3"></i>secretcoder@gmail.com</p>
                     <div class="d-flex pt-2">
                         <a class="btn btn-outline-light btn-social" href=""><i class="fab fa-twitter"></i></a>
@@ -431,46 +432,70 @@
     <script src="lib/easing/easing.min.js"></script>
     <script src="lib/waypoints/waypoints.min.js"></script>
     <script src="lib/owlcarousel/owl.carousel.min.js"></script>
- <script>
-    document.getElementById("instructorForm").addEventListener("submit", async function (event) {
-    event.preventDefault(); // Prevent form from reloading the page
-
-    // Collecting form data
-    const formData = {
-        firstName: document.getElementById("f_name").value,
-        lastName: document.getElementById("l_name").value,
-        email: document.getElementById("email").value,
-        phone: document.getElementById("phone").value,
-        degree: document.getElementById("degree").value,
-        subject: document.getElementById("subject").value,
-        address: document.getElementById("address").value,
-        termsAccepted: document.getElementById("terms").checked, // Check if checkbox is checked
-    };
-
-    const responseMessage = document.getElementById("responseMessage");
-
-    try {
-        const response = await fetch("http://localhost:5000/api/instructors", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formData),
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("instructorForm");
+        
+            if (!form) {
+                console.error("❌ Form with ID 'instructorForm' not found.");
+                return;
+            }
+        
+            form.addEventListener("submit", async function (event) {
+                event.preventDefault();
+        
+                const formData = {
+                    firstName: document.getElementById("firstName")?.value.trim(),
+                    lastName: document.getElementById("lastName")?.value.trim(),
+                    email: document.getElementById("email")?.value.trim(),
+                    phone: document.getElementById("phone")?.value.trim(),
+                    degree: document.getElementById("degree")?.value.trim(),
+                    subject: document.getElementById("subject")?.value.trim(),
+                    address: document.getElementById("address")?.value.trim(),
+                };
+        
+                const responseMessage = document.getElementById("responseMessage");
+        
+                // Debugging log
+                console.log("📦 Sent formData:", formData);
+        
+                // Basic validation before sending
+                const missing = Object.entries(formData).filter(([key, val]) => !val);
+                if (missing.length > 0) {
+                    responseMessage.innerText = "Please fill all fields before submitting.";
+                    responseMessage.style.color = "red";
+                    console.warn("⚠️ Missing fields:", missing.map(([k]) => k).join(", "));
+                    return;
+                }
+        
+                try {
+                    const response = await fetch("http://localhost:5000/api/instructors", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData),
+                    });
+        
+                    const data = await response.json();
+                    console.log("📥 Response from backend:", data);
+        
+                    if (response.ok) {
+                        responseMessage.innerText = data.message || "Application submitted successfully!";
+                        responseMessage.style.color = "green";
+                        form.reset();
+                    } else {
+                        responseMessage.innerText = data.message || "Something went wrong!";
+                        responseMessage.style.color = "red";
+                    }
+                } catch (error) {
+                    console.error("❌ Fetch error:", error);
+                    responseMessage.innerText = "Error connecting to server.";
+                    responseMessage.style.color = "red";
+                }
+            });
         });
-
-        const data = await response.json();
-        if (response.ok) {
-            responseMessage.innerText = "Application submitted successfully!";
-            responseMessage.style.color = "green";
-        } else {
-            responseMessage.innerText = "Failed to submit application.";
-            responseMessage.style.color = "red";
-        }
-    } catch (error) {
-        responseMessage.innerText = "Error connecting to server.";
-        responseMessage.style.color = "red";
-    }
-});
-
- </script>
+        </script>
+        
+    
     <!-- Template Javascript -->
     <script src="js/main.js"></script>
 </body>
