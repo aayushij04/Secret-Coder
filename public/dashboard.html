@@ -1,168 +1,314 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secret Coder Dashboard</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/python/python.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/javascript-hint.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #1e1e1e;
-            color: #ffffff;
-            transition: background 0.3s, color 0.3s;
-        }
-        .container {
-            display: flex;
-            height: 80vh;
-        }
-        .editor-container, .output-container {
-            width: 50%;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-        .output-container {
-            background: #252526;
-            overflow: auto;
-            border-left: 2px solid #ccc;
-            color: #ffffff;
-        }
-        header {
-            background-color: #007bff;
-            color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .profile {
-            cursor: pointer;
-            position: relative;
-        }
-        .profile-menu {
-            display: none;
-            position: absolute;
-            background: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            right: 0;
-            top: 30px;
-            padding: 10px;
-            border-radius: 5px;
-            color: black;
-        }
-        .profile:hover .profile-menu {
-            display: block;
-        }
-        footer {
-            text-align: center;
-            padding: 15px;
-            background-color: #007bff;
-            color: white;
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-        }
-        select, button {
-            margin-top: 10px;
-            padding: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .theme-toggle {
-            background: #fff;
-            color: #333;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-    </style>
-    <script>
-        let editor;
-        function toggleTheme() {
-            const body = document.body;
-            if (body.style.backgroundColor === "#ffffff") {
-                body.style.backgroundColor = "#1e1e1e";
-                body.style.color = "#ffffff";
-            } else {
-                body.style.backgroundColor = "#ffffff";
-                body.style.color = "#000000";
-            }
-        }
-        window.onload = function() {
-            const userName = localStorage.getItem("username") || "User";
-            document.getElementById("user-name").innerText = userName;
-
-            editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
-                lineNumbers: true,
-                mode: "javascript",
-                theme: "dracula",
-                extraKeys: { "Ctrl-Space": "autocomplete" }
-            });
-        };
-        async function compileAndRun() {
-            const code = editor.getValue();
-            const language = document.getElementById("languageSelect").value;
-            const outputElement = document.getElementById("output");
-            outputElement.innerHTML = "Running...";
-            try {
-                const response = await fetch("https://emkc.org/api/v2/piston/execute", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ language: language, source: code })
-                });
-                const result = await response.json();
-                outputElement.innerHTML = result.output || "No output";
-            } catch (error) {
-                outputElement.innerHTML = "Error: " + error.message;
-            }
-        }
-    </script>
+  <meta charset="UTF-8" />
+  <title>Dashboard Compiler</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+    .dashboard {
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .welcome {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .profile {
+      position: relative;
+      cursor: pointer;
+    }
+    .profile-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background-color: gray;
+    }
+    .dropdown {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      display: none;
+      z-index: 10;
+      min-width: 160px;
+    }
+    .dropdown a, .dropdown div {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #000;
+      background: #fff;
+      cursor: pointer;
+    }
+    .dropdown a:hover, .dropdown div:hover {
+      background-color: #eee;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      align-items: center;
+    }
+    select, .theme-toggle {
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .theme-toggle {
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      padding: 10px;
+      font-family: monospace;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      background: #f4f4f4;
+      color: #000;
+      resize: vertical;
+    }
+    .actions {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 20px;
+      background-color: #1976d2;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .btn.save { background-color: #2e7d32; }
+    .btn.run { background-color: #f57c00; }
+    .output {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #eee;
+      font-family: monospace;
+      white-space: pre-wrap;
+      min-height: 80px;
+    }
+    body.dark {
+      background-color: #121212;
+      color: #fff;
+    }
+    body.dark textarea {
+      background: #1e1e1e;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    body.dark .theme-toggle,
+    body.dark select {
+      background: #333;
+      color: #fff;
+      border: 1px solid #555;
+    }
+    body.dark .dropdown {
+      background: #333;
+      border: 1px solid #555;
+    }
+    body.dark .dropdown a,
+    body.dark .dropdown div {
+      color: #fff;
+      background: #333;
+    }
+    body.dark .dropdown a:hover,
+    body.dark .dropdown div:hover {
+      background: #444;
+    }
+    body.dark .output {
+      background-color: #1e1e1e;
+      color: #fff;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Welcome, <span id="user-name"></span>!</h1>
-        <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
-        <div class="profile">Profile ▼
-            <div class="profile-menu">
-                <p>Dashboard</p>
-                <p>Courses</p>
-                <p>Profile</p>
-                <p>Logout</p>
-            </div>
+  <div class="dashboard">
+    <div class="header">
+      <div class="welcome" id="welcome">Welcome, User</div>
+      <div class="profile" onclick="toggleDropdown()">
+        <div class="profile-icon"></div>
+        <div class="dropdown" id="profileDropdown">
+          <div onclick="viewProfile()">👤 View Profile</div>
+          <div onclick="toggleSavedCodes()">💾 Saved Codes</div>
+          <div onclick="logout()">🚪 Logout</div>
+          <div id="savedCodes" style="display: none; border-top: 1px solid #ccc;"></div>
         </div>
-    </header>
-    <div class="container">
-        <div class="editor-container">
-            <h2>Code Editor</h2>
-            <select id="languageSelect">
-                <option value="javascript">JavaScript</option>
-                <option value="python">Python</option>
-                <option value="c">C</option>
-                <option value="cpp">C++</option>
-                <option value="java">Java</option>
-            </select>
-            <textarea id="codeEditor"></textarea>
-            <button onclick="compileAndRun()">Compile & Run</button>
-        </div>
-        <div class="output-container">
-            <h2>Output</h2>
-            <div id="output">Output will appear here...</div>
-        </div>
+      </div>
     </div>
-    <footer>
-        <p>&copy; 2025 Secret Coder. All rights reserved.</p>
-    </footer>
+
+    <div class="controls">
+      <select id="language">
+        <option value="javascript">JavaScript</option>
+        <option value="python">Python</option>
+        <option value="cpp">C++</option>
+      </select>
+      <div class="theme-toggle" onclick="toggleTheme()">🌙</div>
+    </div>
+
+    <textarea id="codeEditor" placeholder="Write your code here..."></textarea>
+
+    <div class="actions">
+      <button class="btn save" onclick="saveCode()">💾 Save</button>
+      <button class="btn" onclick="shareCode()">🔗 Share</button>
+      <button class="btn run" onclick="runCode()">▶️ Compile & Run</button>
+    </div>
+
+    <div class="output" id="outputBox">Output will appear here...</div>
+  </div>
+
+  <script>
+    const loginUser = {
+      name: "Aayushi",
+      completedCodes: 12
+    };
+
+    document.getElementById("welcome").textContent = `Welcome, ${loginUser.name}`;
+
+    function toggleTheme() {
+      document.body.classList.toggle("dark");
+      document.querySelector('.theme-toggle').textContent =
+        document.body.classList.contains("dark") ? "☀️" : "🌙";
+    }
+
+    function toggleDropdown() {
+      const dd = document.getElementById("profileDropdown");
+      dd.style.display = dd.style.display === "block" ? "none" : "block";
+    }
+
+    function viewProfile() {
+      alert(`${loginUser.name}'s Profile\nCompleted Codes: ${loginUser.completedCodes}`);
+    }
+
+    function logout() {
+      alert("Logging out...");
+    }
+
+    function toggleSavedCodes() {
+      const savedDiv = document.getElementById("savedCodes");
+      savedDiv.style.display = savedDiv.style.display === "block" ? "none" : "block";
+      refreshSavedCodes();
+    }
+
+    function refreshSavedCodes() {
+      const savedDiv = document.getElementById("savedCodes");
+      savedDiv.innerHTML = "";
+      const keys = Object.keys(localStorage);
+      const userCodes = keys.filter(k => k.startsWith(`${loginUser.name}_code_`));
+      if (userCodes.length === 0) {
+        savedDiv.innerHTML = "<div style='padding: 10px; color: gray;'>No saved codes</div>";
+        return;
+      }
+      userCodes.forEach(k => {
+        const fileName = k.split("_code_")[1];
+        const item = document.createElement("div");
+        item.textContent = `📄 ${fileName}`;
+        item.onclick = () => {
+          const code = localStorage.getItem(k);
+          document.getElementById("codeEditor").value = code;
+          document.getElementById("outputBox").textContent = `Loaded "${fileName}"`;
+          toggleDropdown();
+        };
+        savedDiv.appendChild(item);
+      });
+    }
+
+    function saveCode() {
+      const code = document.getElementById("codeEditor").value;
+      const filename = prompt("Enter file name to save:");
+      if (!filename) return;
+      const key = `${loginUser.name}_code_${filename}`;
+      localStorage.setItem(key, code);
+      alert(`Code saved as "${filename}"`);
+      refreshSavedCodes();
+    }
+
+    function shareCode() {
+      const code = document.getElementById("codeEditor").value;
+      navigator.clipboard.writeText(code).then(() => {
+        alert("Code copied to clipboard!");
+      });
+    }
+
+    async function runCode() {
+      const code = document.getElementById("codeEditor").value;
+      const lang = document.getElementById("language").value;
+      const outputBox = document.getElementById("outputBox");
+
+      const languageMap = {
+        javascript: 63,
+        python: 71,
+        cpp: 54
+      };
+
+      const languageId = languageMap[lang];
+
+      outputBox.textContent = "⏳ Running your code...";
+
+      try {
+        const response = await fetch("http://localhost:5000/run-code", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            code: code,
+            languageId: languageId
+          })
+        });
+
+        const contentType = response.headers.get("Content-Type");
+        if (contentType && contentType.includes("application/json")) {
+          const result = await response.json();
+
+          if (result.stderr) {
+            outputBox.textContent = `❌ Runtime Error:\n${result.stderr}`;
+          } else if (result.compile_output) {
+            outputBox.textContent = `⚠️ Compile Error:\n${result.compile_output}`;
+          } else {
+            outputBox.textContent = `✅ Output (${lang}):\n${result.stdout}`;
+          }
+        } else {
+          outputBox.textContent = "❌ Error: Unexpected response format.";
+        }
+      } catch (err) {
+        outputBox.textContent = `❌ Error: ${err.message}`;
+      }
+    }
+
+    const starterCodes = {
+      javascript: `console.log("Hello, JavaScript!");`,
+      python: `print("Hello, Python!")`,
+      cpp: `#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, C++!" << endl;\n    return 0;\n}`
+    };
+
+    document.getElementById("language").addEventListener("change", function () {
+      const lang = this.value;
+      document.getElementById("codeEditor").value = starterCodes[lang];
+    });
+
+    document.getElementById("language").dispatchEvent(new Event("change"));
+
+    window.addEventListener("click", function (e) {
+      if (!e.target.closest(".profile")) {
+        document.getElementById("profileDropdown").style.display = "none";
+      }
+    });
+  </script>
 </body>
 </html>
